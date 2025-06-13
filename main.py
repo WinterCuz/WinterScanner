@@ -341,10 +341,25 @@ def get_input(prompt: str) -> str:
 
 def check_for_updates() -> bool:
     try:
-      
-        version_url = "https://github.com/WinterCuz/WinterScanner/blob/main/version.txt"
-        response = requests.get(version_url, timeout=5)
+        version_url = "https://raw.githubusercontent.com/WinterCuz/WinterScanner/refs/heads/main/version.txt"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(version_url, headers=headers, timeout=5)
+        
+       
+        if response.status_code != 200:
+            print_error(f"Failed to check for updates (Status code: {response.status_code})")
+            return False
+            
         latest_version = response.text.strip()
+        
+    
+        if not latest_version or len(latest_version) > 10:
+            print_error("Invalid version format received")
+            return False
         
         if latest_version > VERSION:
             print_gradient_text(f"New version {latest_version} available!")
@@ -352,39 +367,56 @@ def check_for_updates() -> bool:
             
             if update == 'y':
                 return perform_update(latest_version)
+        else:
+            print_info("You are running the latest version!")
+            
         return False
     except Exception as e:
         print_error(f"Error checking for updates: {str(e)}")
         return False
 
 def perform_update(new_version: str) -> bool:
-    
+
     try:
         print_loading("Downloading update", 2)
         
+        update_url = "https://raw.githubusercontent.com/WinterCuz/WinterScanner/refs/heads/main/main.py"
         
-        update_url = ""
-        response = requests.get(update_url)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
         
-      
+        response = requests.get(update_url, headers=headers)
+        
+        if response.status_code != 200:
+            print_error(f"Failed to download update (Status code: {response.status_code})")
+            return False
+        
+    
+        if not response.text.startswith("import") and "def" not in response.text:
+            print_error("Invalid update file received")
+            return False
+        
+     
         backup_path = f"winterscanner_backup_v{VERSION}.py"
-        with open(backup_path, 'w') as f:
-            with open(sys.argv[0], 'r') as current:
+        with open(backup_path, 'w', encoding='utf-8') as f:
+            with open(sys.argv[0], 'r', encoding='utf-8') as current:
                 f.write(current.read())
         
-  
-        with open(sys.argv[0], 'w') as f:
+       
+        with open(sys.argv[0], 'w', encoding='utf-8') as f:
             f.write(response.text)
         
         print_success(f"Update successful! Backup saved to {backup_path}")
         print_info("Restarting application...")
         
-        
+      
         os.execv(sys.executable, [sys.executable] + sys.argv)
         return True
     except Exception as e:
         print_error(f"Error during update: {str(e)}")
         return False
+
 
 
 
