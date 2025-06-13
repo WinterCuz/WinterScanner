@@ -28,7 +28,7 @@ from typing import List, Dict, Tuple, Optional, Union, Any, Set, Callable
 from pathlib import Path
 from collections import defaultdict
 
-os.system("title WinterScanner v1.0")
+os.system("title WinterScanner v1.1")
 
 
 logging.basicConfig(
@@ -107,7 +107,7 @@ except ImportError as e:
     init(autoreset=True)
 
 
-VERSION = "1.0"
+VERSION = "1.1"
 AUTHOR = "Winter"
 MAX_THREADS = 100
 SCAN_TIMEOUT = 2.0
